@@ -127,6 +127,8 @@
 
 <img src="scooters_scheme.svg" width="1000">
 
+Ссылка для редактирования: [excalidraw.com](https://excalidraw.com/#json=KI-6KCB_q8U4J-kf7DwhS,2Gdqd_rnBOj5B_SE0iHsLw)
+
 Сервисы `Zones`, `Payments`, `Scooters`, `Configs`, `Users` будут запускаться отдельно от основного сервиса и использовать собственные базы данных или внешние системы для хранения информации (архитектура этих сервисов не рассматривается в ADR).
 
 ### Схема поддерживаемых ручек для `scooter-rental-service`
