@@ -133,7 +133,7 @@
 
 #### Схема `/offers/create`
 
-- URI `POST` запроса: `/offers/create?user_id={user_id}`
+- URI `PUT` запроса: `/offers/create?user_id={user_id}`
 - Результат: `{"offer_id": "{offer_id}", "price": {price}}`
   - `user_id` - строка
   - `offer_id` - строка
@@ -141,7 +141,7 @@
 
 #### Схема `/offers/start`
 
-- URI `POST` запроса: `/orders/start?user_id={user_id}&offer_id={offer_id}`
+- URI `PUT` запроса: `/orders/start?user_id={user_id}&offer_id={offer_id}`
 - Результат: `{"order_id": "{order_id}"}`
   - `user_id` - строка
   - `offer_id` - строка
@@ -157,7 +157,7 @@
 
 #### Схема `/offers/stop`
 
-- URI `POST` запроса: `/orders/stop?user_id={user_id}&order_id={order_id}`
+- URI `PUT` запроса: `/orders/stop?user_id={user_id}&order_id={order_id}`
 - Результат: `{"total_price": {price}}`
   - `user_id` - строка
   - `order_id` - строка
