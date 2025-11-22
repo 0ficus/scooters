@@ -121,6 +121,8 @@
 
 ## 5. Scheme
 
+Для реализации сервиса `scooter-rental-service` был выбран язык Python и фреймворк Fast API.
+
 ### Общая схема сервиса
 
 <img src="scooters_scheme.svg" width="1000">
