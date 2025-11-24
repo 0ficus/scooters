@@ -176,6 +176,39 @@
 - Результат: `{"error": "{error_message}"}`
   - `error_message` - строка
 
+### Схемы таблиц
+
+#### Таблица `offers`
+
+```sql
+CREATE TABLE Offers (
+    offer_id AUTO_INCREMENT PRIMARY KEY,
+    user_id  INTEGER NOT NULL,
+    scooter_id  INTEGER NOT NULL,
+    time_offer_creation TIMESTAMP NOT NULL,
+    price_per_minute INTEGER NOT NULL,
+    price_unlock  INTEGER NOT NULL,
+    deposit  INTEGER NOT NULL,
+    ttl INTEGER NOT NULL
+);
+```
+
+#### Таблица `orders`
+
+```sql
+CREATE TABLE Orders (
+    order_id AUTO_INCREMENT PRIMARY KEY,
+    user_id  INTEGER NOT NULL,
+    scooter_id  INTEGER NOT NULL,
+    time_start TIMESTAMP NOT NULL,
+    time_finish TIMESTAMP NOT NULL,
+    price_per_minute INTEGER NOT NULL,
+    price_unlock  INTEGER NOT NULL,
+    deposit  INTEGER NOT NULL,
+    ttl INTEGER NOT NULL
+);
+```
+
 ### Взаимодействие с S3
 
 Сохранение заказов в S3 после завершения позволит значительно снизить объём базы дынных с таблицей `orders` и удешевить её. Также добавление S3 решает проблему шардирования таблицы `orders` на несколько хостов (так как с учётов времени хранения заказа в 1 год нужно сохранить около 3 TB данных).
