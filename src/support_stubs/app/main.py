@@ -52,17 +52,5 @@ async def get_scooter(scooter_id: int):
         raise HTTPException(status_code=404, detail="scooter_not_found")
     return scooter
 
-
-@app.post("/payments/authorize")
-async def authorize(payload: dict):
-    if payload.get("amount", 0) <= 0:
-        raise HTTPException(status_code=400, detail="invalid_amount")
-    return {"status": "authorized"}
-
-
-@app.post("/payments/capture")
-async def capture(payload: dict):
-    if payload.get("amount", 0) <= 0:
-        raise HTTPException(status_code=400, detail="invalid_amount")
-    return {"status": "captured"}
+# TODO: payments
 
