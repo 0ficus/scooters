@@ -1,9 +1,8 @@
-version: "3.9"
-
 services:
   order-offer-service:
     build:
       context: ./src/order_offer_service
+    command: uvicorn order_offer_service.app.main:app --host 0.0.0.0 --port 8080
     environment:
       POSTGRES_DSN: postgresql+asyncpg://orders_user:orders_pass@postgres:5432/orders_db
       REDIS_DSN: redis://redis:6379/0
@@ -24,6 +23,7 @@ services:
   support-stubs:
     build:
       context: ./src/support_stubs
+    command: uvicorn support_stubs.app.main:app --host 0.0.0.0 --port 8081
     ports:
       - "8081:8081"
 

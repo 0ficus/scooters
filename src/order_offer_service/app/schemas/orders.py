@@ -8,7 +8,7 @@ class OrderStartRequest(BaseModel):
     offer_id: int
 
 
-class OrderStartResponse(BaseModel)
+class OrderStartResponse(BaseModel):
     order_id: int
 
 
