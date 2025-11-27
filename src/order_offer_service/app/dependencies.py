@@ -2,7 +2,6 @@ from order_offer_service.app.repositories import OfferRepository, OrderRepositor
 from order_offer_service.app.services import (
     OfferService,
     OrderService,
-    PricingService,
     ConfigClient,
     ZoneClient,
     UserClient,

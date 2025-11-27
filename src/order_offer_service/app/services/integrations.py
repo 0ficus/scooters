@@ -89,6 +89,9 @@ class ZoneClient(BaseStubClient):
 
 
 class UserClient(BaseStubClient):
+    def __init__(self) -> None:
+        super().__init__("users")
+
     async def get_user(self, user_id: int) -> dict[str, Any]:
         try:
             return await self._request("GET", f"/users/{user_id}")

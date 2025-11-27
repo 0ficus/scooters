@@ -54,3 +54,8 @@ async def get_scooter(scooter_id: int):
 
 # TODO: payments
 
+
+@app.get("/health", tags=["service"])
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
+

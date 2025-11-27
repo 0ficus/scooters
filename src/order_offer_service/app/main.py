@@ -33,3 +33,8 @@ async def startup_event() -> None:
 async def domain_exception_handler(_: Request, exc: DomainError) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
+
+@app.get("/health", tags=["service"])
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
+
