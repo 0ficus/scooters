@@ -25,6 +25,10 @@ class Settings(BaseSettings):
 
     stub_service_base_url: AnyHttpUrl = Field("http://support-stubs:8081", alias="STUB_SERVICE_BASE_URL")
 
+    low_charge_threshold: int = Field(30, ge=0, le=100)
+    zone_cache_ttl_seconds: int = Field(600, ge=60)
+    config_cache_ttl_seconds: int = Field(60, ge=10)
+
 
 @lru_cache(1)
 def get_settings() -> Settings:
