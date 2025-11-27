@@ -25,7 +25,9 @@ class BaseStubClient:
         self.critical = critical
 
     async def _request(self, method: str, path: str, **kwargs) -> Any:
-        url = f"{settings.stub_service_base_url}{path}"
+        base_url = str(settings.stub_service_base_url).rstrip("/")
+        path = path.lstrip("/")
+        url = f"{base_url}/{path}"
 
         async def _call() -> Any:
             try:
