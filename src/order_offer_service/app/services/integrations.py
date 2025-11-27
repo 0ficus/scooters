@@ -63,6 +63,15 @@ class ConfigClient(BaseStubClient):
         super().__init__("configs")
         self.redis = redis or redis_client
 
+    async def get_price_coeff_settings(self) -> dict[str, Any]:
+        cache_key = "configs:price_coeff_settings"
+        cached = await cached_get(self.redis, cache_key)
+        if cached:
+            return cached
+        payload = await self._request("GET", "/configs/price_coeff_settings")
+        await cached_set(self.redis, cache_key, payload, settings.config_cache_ttl_seconds)
+        return payload
+
 
 class ZoneClient(BaseStubClient):
     def __init__(self, redis: Redis | None = None) -> None:

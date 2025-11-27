@@ -18,7 +18,7 @@ user_client = UserClient()
 scooter_client = ScooterClient()
 payment_client = PaymentClient()
 
-offer_service = OfferService(offer_repository, scooter_client, user_client)
+offer_service = OfferService(offer_repository, config_client, zone_client, scooter_client, user_client)
 order_service = OrderService(order_repository, offer_service, payment_client, scooter_client)
 
 
