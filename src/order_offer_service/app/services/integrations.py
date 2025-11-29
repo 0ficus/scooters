@@ -106,24 +106,35 @@ class ScooterClient(BaseStubClient):
     def __init__(self) -> None:
         super().__init__("scooters", critical=True)
 
+    async def _scooter_action(self, scooter_id: int, action: str) -> None:
+        payload = await self._request("PUT", f"/scooters/{scooter_id}/{action}")
+        if not payload.get("success", False):
+            raise exceptions.ScooterUnavailable()
+
     async def get_scooter(self, scooter_id: int, require_available: bool = True) -> dict[str, Any]:
         payload = await self._request("GET", f"/scooters/{scooter_id}")
         if require_available and not payload.get("available", True):
             raise exceptions.ScooterUnavailable()
         return payload
 
+    async def lock_scooter(self, scooter_id: int) -> None:
+        await self._scooter_action(scooter_id, "lock")
+
+    async def unlock_scooter(self, scooter_id: int) -> None:
+        await self._scooter_action(scooter_id, "unlock")
+
 
 class PaymentClient(BaseStubClient):
     def __init__(self) -> None:
         super().__init__("payments", critical=True)
 
-    async def _do_payment(self, user_id: int, order_id: int, amount: float, action: str, require_available: bool):
-        payload = await self._request("PUT", f"/payments/{action}/{user_id}/{order_id}", params={"amount": amount})
-        if require_available and not payload.get("success", False):
+    async def _do_payment(self, user_id: int, order_id: int, amount: float, action: str) -> None:
+        payload = await self._request("PUT", f"/payments/{user_id}/{order_id}/{action}", params={"amount": amount})
+        if not payload.get("success", False):
             raise exceptions.PaymentDeclined()
 
-    async def hold_money(self, user_id: int, order_id: int, amount: float, require_available: bool = True):
-        await self._do_payment(user_id, order_id, amount, "hold", require_available)
+    async def hold_money(self, user_id: int, order_id: int, amount: float) -> None:
+        await self._do_payment(user_id, order_id, amount, "hold")
 
-    async def clear_money(self, user_id: int, order_id: int, amount: float, require_available: bool = True):
-        await self._do_payment(user_id, order_id, amount, "clear", require_available)
+    async def clear_money(self, user_id: int, order_id: int, amount: float) -> None:
+        await self._do_payment(user_id, order_id, amount, "clear")

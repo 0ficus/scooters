@@ -71,7 +71,27 @@ async def get_scooter(scooter_id: int):
     return scooter
 
 
-@app.put("/payments/hold/{user_id}/{order_id}")
+@app.put("/scooters/{scooter_id}/lock")
+async def lock_scooter(scooter_id: int):
+    scooter = SCOOTERS.get(scooter_id)
+    if not scooter:
+        raise HTTPException(status_code=404, detail="scooter_not_found")
+
+    scooter["available"] = False
+    return {"success": True}
+
+
+@app.put("/scooters/{scooter_id}/unlock")
+async def unlock_scooter(scooter_id: int):
+    scooter = SCOOTERS.get(scooter_id)
+    if not scooter:
+        raise HTTPException(status_code=404, detail="scooter_not_found")
+
+    scooter["available"] = True
+    return {"success": True}
+
+
+@app.put("/payments/{user_id}/{order_id}/hold")
 async def hold_payments(user_id: int, order_id: int, amount: float):
     user = USERS.get(user_id)
     if not user:
@@ -87,7 +107,7 @@ async def hold_payments(user_id: int, order_id: int, amount: float):
     return {"success": True}
 
 
-@app.put("/payments/clear/{user_id}/{order_id}")
+@app.put("/payments/{user_id}/{order_id}/clear")
 async def clear_payments(user_id: int, order_id: int, amount: float):
     user = USERS.get(user_id)
     if not user:

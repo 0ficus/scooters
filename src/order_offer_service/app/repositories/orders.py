@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from order_offer_service.app.models import Order
@@ -37,6 +37,12 @@ class OrderRepository:
         stmt = select(Order).where(Order.order_id == order_id)
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def finish(self, session: AsyncSession, order_id: int) -> None:
+        stmt = update(Order).where(Order.order_id == order_id).values({"time_finish": datetime.now(timezone.utc)})
+        await session.execute(stmt)
+        await session.commit()
+        return await self.get(session, order_id)
 
     async def delete(self, session: AsyncSession, order_id: int) -> None:
         await session.execute(delete(Order).where(Order.order_id == order_id))

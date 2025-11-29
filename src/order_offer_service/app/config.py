@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     stub_service_base_url: AnyHttpUrl = Field("http://support-stubs:8081", alias="STUB_SERVICE_BASE_URL")
 
     low_charge_threshold: int = Field(30, ge=0, le=100)
+    order_minimal_duration_seconds: int = Field(5, ge=0)
     zone_cache_ttl_seconds: int = Field(600, ge=60)
     config_cache_ttl_seconds: int = Field(60, ge=10)
 
