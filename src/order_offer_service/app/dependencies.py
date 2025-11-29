@@ -1,3 +1,5 @@
+from order_offer_service.app.cache.zones import ZonesCache
+from order_offer_service.app.cache.configs import ConfigsCache
 from order_offer_service.app.repositories import OfferRepository, OrderRepository
 from order_offer_service.app.services import (
     OfferService,
@@ -8,6 +10,9 @@ from order_offer_service.app.services import (
     ScooterClient,
     PaymentClient,
 )
+
+config_cache = ConfigsCache()
+zones_cache = ZonesCache()
 
 offer_repository = OfferRepository()
 order_repository = OrderRepository()
@@ -29,3 +34,9 @@ def get_order_service() -> OrderService:
     return order_service
 
 
+def get_zones_cache() -> ZonesCache:
+    return zones_cache
+
+
+def get_configs_zones_cache() -> ConfigsCache:
+    return config_cache
