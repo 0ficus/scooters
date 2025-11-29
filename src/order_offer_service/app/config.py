@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     s3_secret_key: str = Field("minioadmin", alias="S3_SECRET_KEY")
     s3_bucket: str = Field("orders-archive", alias="S3_BUCKET")
     s3_region: str = Field("eu-central-1", alias="S3_REGION")
+    s3_max_ttl_days: int = Field(365 * 100, ge=1)
 
     stub_service_base_url: AnyHttpUrl = Field("http://support-stubs:8081", alias="STUB_SERVICE_BASE_URL")
 

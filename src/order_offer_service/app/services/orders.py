@@ -54,15 +54,11 @@ class OrderService:
             total_amount = (order_duration * order.price_per_minute) // 60 + order.price_unlock
 
         await self.payment_client.clear_money(user_id, order_id, total_amount)
-
-        scooter_id = order.scooter_id
-        scooter = await self.scooter_client.get_scooter(scooter_id, require_available=False)
-        if not scooter.get("available", True):
-            await self.scooter_client.unlock_scooter(scooter_id)
+        await self.scooter_client.unlock_scooter(order.scooter_id)
 
         order_data = order.to_dict()
         order_data["total_amount"] = total_amount
-        archive_key = await s3_storage.store_order(order.to_dict(), scooter["zone_id"])
+        archive_key = await s3_storage.store_order(order.to_dict(), order.ttl)
 
         await self.order_repo.delete(session, order_id)
         await session.commit()
