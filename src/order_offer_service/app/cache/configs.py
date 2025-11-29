@@ -10,4 +10,4 @@ class ConfigsCache(BaseCache):
         self.client = client
 
     async def get_configs(self):
-        return await self.get_or_set(self.KEY, self.client.get_price_coeff_settings)
+        return await self.get_or_set(self.KEY, self.client.obtain_price_coeff_settings)
