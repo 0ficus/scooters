@@ -11,6 +11,10 @@ from order_offer_service.app.core import exceptions
 from order_offer_service.app.core.redis import cached_get, cached_set, redis_client
 from order_offer_service.app.logging_config import get_logger
 
+from order_offer_service.app.cache.zones import ZonesCache
+from order_offer_service.app.cache.configs import ConfigsCache
+from order_offer_service.app.dependencies import get_zones_cache, get_configs_zones_cache
+
 settings = get_settings()
 logger = get_logger(__name__)
 
@@ -61,33 +65,27 @@ class BaseStubClient:
 
 
 class ConfigClient(BaseStubClient):
-    def __init__(self, redis: Redis | None = None) -> None:
+    def __init__(self, cache: ConfigsCache | None = None) -> None:
         super().__init__("configs")
-        self.redis = redis or redis_client
+        self.cache = cache or ConfigsCache()
+
+    async def obtain_price_coeff_settings(self) -> dict[str, Any]:
+        return await self._request("GET", "/configs/price_coeff_settings")
 
     async def get_price_coeff_settings(self) -> dict[str, Any]:
-        cache_key = "configs:price_coeff_settings"
-        cached = await cached_get(self.redis, cache_key)
-        if cached:
-            return cached
-        payload = await self._request("GET", "/configs/price_coeff_settings")
-        await cached_set(self.redis, cache_key, payload, settings.config_cache_ttl_seconds)
-        return payload
+        return await self.cache.get_configs()
 
 
 class ZoneClient(BaseStubClient):
-    def __init__(self, redis: Redis | None = None) -> None:
+    def __init__(self, cache: ZonesCache | None = None) -> None:
         super().__init__("zones")
-        self.redis = redis or redis_client
+        self.cache = cache or ZonesCache()
+
+    async def obtain_zone(self, zone_id: str) -> dict[str, Any]:
+        return await self._request("GET", f"/zones/{zone_id}")
 
     async def get_zone(self, zone_id: str) -> dict[str, Any]:
-        cache_key = f"zones:{zone_id}"
-        cached = await cached_get(self.redis, cache_key)
-        if cached:
-            return cached
-        payload = await self._request("GET", f"/zones/{zone_id}")
-        await cached_set(self.redis, cache_key, payload, settings.zone_cache_ttl_seconds)
-        return payload
+        return await self.cache.get_zones(f"zones:{zone_id}")
 
 
 class UserClient(BaseStubClient):
