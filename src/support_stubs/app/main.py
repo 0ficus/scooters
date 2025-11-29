@@ -10,8 +10,26 @@ ZONES = {
 }
 
 USERS = {
-    1: {"user_id": 1, "has_subscribtion": True, "trusted": True},
-    2: {"user_id": 2, "has_subscribtion": False, "trusted": False},
+    1: {
+        "user_id": 1,
+        "has_subscribtion": True,
+        "trusted": True,
+        "bill": 0.0,
+        "orders": {
+            0: {"hold_bill": 0.0},
+            1: {"hold_bill": 10.0},
+        }
+    },
+    2: {
+        "user_id": 2,
+        "has_subscribtion": False,
+        "trusted": False,
+        "bill": 0.0,
+        "orders": {
+            0: {"hold_bill": 42.0},
+            1: {"hold_bill": 1.0},
+        }
+    },
 }
 
 SCOOTERS = {
@@ -52,7 +70,39 @@ async def get_scooter(scooter_id: int):
         raise HTTPException(status_code=404, detail="scooter_not_found")
     return scooter
 
-# TODO: payments
+
+@app.put("/payments/hold/{user_id}/{order_id}")
+async def hold_payments(user_id: int, order_id: int, amount: float):
+    user = USERS.get(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="user_not_found")
+
+    orders = user.setdefault("orders", {})
+    if order_id in orders:
+        raise HTTPException(status_code=409, detail="order_payment_already_hold")
+
+    orders[order_id] = {"hold_bill": amount}
+    user["bill"] = user.get("bill", 0.0) - amount
+
+    return {"success": True}
+
+
+@app.put("/payments/clear/{user_id}/{order_id}")
+async def clear_payments(user_id: int, order_id: int, amount: float):
+    user = USERS.get(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="user_not_found")
+
+    orders = user.get("orders", {})
+    order = orders.get(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="order_not_found")
+
+    amount -= order.get("hold_bill", 0.0)
+    orders.pop(order_id)
+    user["bill"] = user.get("bill", 0.0) - amount
+
+    return {"success": True}
 
 
 @app.get("/health", tags=["service"])

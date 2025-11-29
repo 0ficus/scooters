@@ -8,6 +8,7 @@ from order_offer_service.app.core import exceptions
 from order_offer_service.app.core.s3 import s3_storage
 from order_offer_service.app.logging_config import get_logger
 from order_offer_service.app.repositories import OrderRepository
+from order_offer_service.app.services.integrations import PaymentClient
 from order_offer_service.app.schemas.orders import OrderStartRequest, OrderStopRequest
 
 logger = get_logger(__name__)
@@ -18,7 +19,7 @@ class OrderService:
         self,
         order_repo: OrderRepository,
         offer_service,
-        payment_client,
+        payment_client: PaymentClient,
         scooter_client,
     ) -> None:
         self.order_repo = order_repo

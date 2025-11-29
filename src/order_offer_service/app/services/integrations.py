@@ -117,3 +117,13 @@ class PaymentClient(BaseStubClient):
     def __init__(self) -> None:
         super().__init__("payments", critical=True)
 
+    async def _do_payment(self, user_id: int, order_id: int, amount: float, action: str, require_available: bool):
+        payload = await self._request("PUT", f"/payments/{action}/{user_id}/{order_id}", params={"amount": amount})
+        if require_available and not payload.get("success", False):
+            raise exceptions.PaymentDeclined()
+
+    async def hold_money(self, user_id: int, order_id: int, amount: float, require_available: bool = True):
+        await self._do_payment(user_id, order_id, amount, "hold", require_available)
+
+    async def clear_money(self, user_id: int, order_id: int, amount: float, require_available: bool = True):
+        await self._do_payment(user_id, order_id, amount, "clear", require_available)
