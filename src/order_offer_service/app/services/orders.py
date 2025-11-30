@@ -58,7 +58,7 @@ class OrderService:
 
         order_data = order.to_dict()
         order_data["total_amount"] = total_amount
-        archive_key = await s3_storage.store_order(order.to_dict(), order.ttl)
+        archive_key = await s3_storage.store_order(order_data, order.ttl)
 
         await self.order_repo.delete(session, order_id)
         await session.commit()
