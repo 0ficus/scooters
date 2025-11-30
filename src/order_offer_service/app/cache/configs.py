@@ -1,11 +1,11 @@
 from .base import BaseCache
-from app.services.integrations import ConfigsClient
+from order_offer_service.app.services.integrations import ConfigClient
 
 
 class ConfigsCache(BaseCache):
     KEY = "configs"
 
-    def __init__(self, client: ConfigsClient, ttl: int = 60):
+    def __init__(self, client: ConfigClient, ttl: int = 60):
         super().__init__(ttl=ttl)
         self.client = client
 

@@ -11,10 +11,6 @@ from order_offer_service.app.core import exceptions
 from order_offer_service.app.core.redis import cached_get, cached_set, redis_client
 from order_offer_service.app.logging_config import get_logger
 
-from order_offer_service.app.cache.zones import ZonesCache
-from order_offer_service.app.cache.configs import ConfigsCache
-from order_offer_service.app.dependencies import get_zones_cache, get_configs_zones_cache
-
 settings = get_settings()
 logger = get_logger(__name__)
 
@@ -65,9 +61,9 @@ class BaseStubClient:
 
 
 class ConfigClient(BaseStubClient):
-    def __init__(self, cache: ConfigsCache | None = None) -> None:
+    def __init__(self, cache) -> None:
         super().__init__("configs")
-        self.cache = cache or ConfigsCache()
+        self.cache = cache
 
     async def obtain_price_coeff_settings(self) -> dict[str, Any]:
         return await self._request("GET", "/configs/price_coeff_settings")
@@ -77,9 +73,9 @@ class ConfigClient(BaseStubClient):
 
 
 class ZoneClient(BaseStubClient):
-    def __init__(self, cache: ZonesCache | None = None) -> None:
+    def __init__(self, cache) -> None:
         super().__init__("zones")
-        self.cache = cache or ZonesCache()
+        self.cache = cache
 
     async def obtain_zone(self, zone_id: str) -> dict[str, Any]:
         return await self._request("GET", f"/zones/{zone_id}")

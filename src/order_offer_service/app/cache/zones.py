@@ -1,5 +1,5 @@
 from .base import BaseCache
-from app.services.integrations import ZoneClient
+from order_offer_service.app.services.integrations import ZoneClient
 
 
 class ZonesCache(BaseCache):

@@ -11,13 +11,13 @@ from order_offer_service.app.services import (
     PaymentClient,
 )
 
-config_cache = ConfigsCache()
-zones_cache = ZonesCache()
+config_cache = ConfigsCache(ConfigClient(None))
+zones_cache = ZonesCache(ZoneClient(None))
 
 offer_repository = OfferRepository()
 order_repository = OrderRepository()
-config_client = ConfigClient()
-zone_client = ZoneClient()
+config_client = ConfigClient(config_cache)
+zone_client = ZoneClient(zones_cache)
 user_client = UserClient()
 scooter_client = ScooterClient()
 payment_client = PaymentClient()
