@@ -98,11 +98,9 @@ async def hold_payments(user_id: int, order_id: int, amount: float):
         raise HTTPException(status_code=404, detail="user_not_found")
 
     orders = user.setdefault("orders", {})
-    if order_id in orders:
-        raise HTTPException(status_code=409, detail="order_payment_already_hold")
-
-    orders[order_id] = {"hold_bill": amount}
-    user["bill"] = user.get("bill", 0.0) - amount
+    if order_id not in orders:
+        orders[order_id] = {"hold_bill": amount}
+        user["bill"] = user.get("bill", 0.0) - amount
 
     return {"success": True}
 
@@ -115,12 +113,10 @@ async def clear_payments(user_id: int, order_id: int, amount: float):
 
     orders = user.get("orders", {})
     order = orders.get(order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="order_not_found")
-
-    amount -= order.get("hold_bill", 0.0)
-    orders.pop(order_id)
-    user["bill"] = user.get("bill", 0.0) - amount
+    if order:
+        amount -= order.get("hold_bill", 0.0)
+        orders.pop(order_id)
+        user["bill"] = user.get("bill", 0.0) - amount
 
     return {"success": True}
 

@@ -53,16 +53,32 @@ async def test_lock_unlock_scooter():
 @pytest.mark.asyncio
 async def test_hold_and_clear_payments():
     async with AsyncClient(app=app, base_url="http://test") as ac:
+        # Hold payment for unknown user should fail
+        response = await ac.put("/payments/13/999/hold", params={"amount": 10.0})
+        assert response.status_code == 404
+        assert "user_not_found" in response.json()["detail"]
+
         # Hold payment for user 1, order 999
         response = await ac.put("/payments/1/999/hold", params={"amount": 10.0})
         assert response.status_code == 200
         assert response.json()["success"] is True
 
-        # Holding again for same order should fail with 409
+        # Holding again for same order should success
         response = await ac.put("/payments/1/999/hold", params={"amount": 10.0})
-        assert response.status_code == 409
+        assert response.status_code == 200
+        assert response.json()["success"] is True
+
+        # Clear payment for unknown user should fail
+        response = await ac.put("/payments/13/999/clear", params={"amount": 10.0})
+        assert response.status_code == 404
+        assert "user_not_found" in response.json()["detail"]
 
         # Clear payment
+        response = await ac.put("/payments/1/999/clear", params={"amount": 10.0})
+        assert response.status_code == 200
+        assert response.json()["success"] is True
+
+        # Clear payment again should success
         response = await ac.put("/payments/1/999/clear", params={"amount": 10.0})
         assert response.status_code == 200
         assert response.json()["success"] is True

@@ -35,6 +35,12 @@ class S3Storage:
         ttl_idx = max(ttl_days - 1, 0).bit_length()
         return self.ttl_grid[min(ttl_idx, len(self.ttl_grid) - 1)]
 
+    @staticmethod
+    def _datetime_converter(o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+        raise TypeError(f"Type {type(o)} not serializable")
+
     async def ensure_bucket(self) -> None:
         async with self._client() as client:
             buckets = await client.list_buckets()
@@ -62,7 +68,7 @@ class S3Storage:
             await client.put_object(
                 Bucket=settings.s3_bucket,
                 Key=key,
-                Body=json.dumps(payload).encode("utf-8"),
+                Body=json.dumps(payload, default=self._datetime_converter).encode("utf-8"),
                 ContentType="application/json",
                 Tagging=urllib.parse.urlencode({"TTL": str(self._round_zone_ttl(ttl_days))})
             )
