@@ -11,7 +11,7 @@ class SingletonMeta(type):
         return cls._instances[cls]
 
 
-class BaseCache(metaclass=SingletonMeta):
+class ServiceCache(metaclass=SingletonMeta):
     def __init__(self, ttl: int, maxsize: int = 1000):
         self.cache = TTLCache(maxsize=maxsize, ttl=ttl)
 
@@ -21,13 +21,13 @@ class BaseCache(metaclass=SingletonMeta):
     def set(self, key: str, value: Any):
         self.cache[key] = value
 
-    async def get_or_set(self, key: str, fetcher: Callable):
+    async def get_or_set(self, key: str, fetcher: Callable, *args, **kvargs):
         cached = self.get(key)
         if cached is not None:
             return cached
 
         try:
-            value = await fetcher()
+            value = await fetcher(*args, **kvargs)
             self.set(key, value)
             return value
         except Exception as error:

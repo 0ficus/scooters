@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from order_offer_service.app.config import get_settings
+from order_offer_service.app.cache.base import ServiceCache
 from order_offer_service.app.core import exceptions
 from order_offer_service.app.core.redis import cached_get, cached_set, redis_client
 from order_offer_service.app.logging_config import get_logger
@@ -61,27 +62,27 @@ class BaseStubClient:
 
 
 class ConfigClient(BaseStubClient):
-    def __init__(self, cache) -> None:
+    def __init__(self, cache_ttl: int = 60) -> None:
         super().__init__("configs")
-        self.cache = cache
+        self.cache = ServiceCache(cache_ttl)
 
     async def obtain_price_coeff_settings(self) -> dict[str, Any]:
         return await self._request("GET", "/configs/price_coeff_settings")
 
     async def get_price_coeff_settings(self) -> dict[str, Any]:
-        return await self.cache.get_configs()
+        return await self.cache.get_or_set("configs", self.obtain_price_coeff_settings)
 
 
 class ZoneClient(BaseStubClient):
-    def __init__(self, cache) -> None:
+    def __init__(self, cache_ttl: int = 600) -> None:
         super().__init__("zones")
-        self.cache = cache
+        self.cache = ServiceCache(cache_ttl)
 
     async def obtain_zone(self, zone_id: str) -> dict[str, Any]:
         return await self._request("GET", f"/zones/{zone_id}")
 
     async def get_zone(self, zone_id: str) -> dict[str, Any]:
-        return await self.cache.get_zones(f"zones:{zone_id}")
+        return await self.cache.get_or_set(f"zones:{zone_id}", self.obtain_zone, zone_id)
 
 
 class UserClient(BaseStubClient):
