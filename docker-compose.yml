@@ -2,7 +2,7 @@ services:
   order-offer-service:
     build:
       context: ./src/order_offer_service
-    command: uvicorn order_offer_service.app.main:app --host 0.0.0.0 --port 8080
+    command: uvicorn order_offer_service.app.main:app --host 0.0.0.0 --port 8000  # ← ИЗМЕНИЛ ПОРТ
     environment:
       POSTGRES_DSN: postgresql+asyncpg://orders_user:orders_pass@postgres:5432/orders_db
       REDIS_DSN: redis://redis:6379/0
@@ -10,7 +10,7 @@ services:
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: minioadmin
       S3_BUCKET: orders-archive
-      STUB_SERVICE_BASE_URL: http://support-stubs:8081
+      STUB_SERVICE_BASE_URL: http://support-stubs:8001  # ← ИЗМЕНИЛ ПОРТ
       LOG_LEVEL: INFO
     depends_on:
       - postgres
@@ -18,14 +18,14 @@ services:
       - minio
       - support-stubs
     ports:
-      - "8080:8080"
+      - "8000:8000"  # ← ИЗМЕНИЛ ПОРТ
 
   support-stubs:
     build:
       context: ./src/support_stubs
-    command: uvicorn support_stubs.app.main:app --host 0.0.0.0 --port 8081
+    command: uvicorn support_stubs.app.main:app --host 0.0.0.0 --port 8001  # ← ИЗМЕНИЛ ПОРТ
     ports:
-      - "8081:8081"
+      - "8001:8001"  # ← ИЗМЕНИЛ ПОРТ
 
   postgres:
     image: postgres:15-alpine
@@ -56,7 +56,20 @@ services:
     volumes:
       - minio-data:/data
 
+  tests:
+    build:
+      context: ./src/order_offer_service
+    command: pytest -v --disable-warnings
+    environment:
+      POSTGRES_DSN: postgresql+asyncpg://orders_user:orders_pass@postgres:5432/orders_db
+      PYTHONPATH: /app
+    depends_on:
+      - postgres
+    volumes:
+      - ./src:/app
+
+
+
 volumes:
   postgres-data:
   minio-data:
-
