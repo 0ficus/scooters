@@ -51,9 +51,20 @@ class OrderService:
             price_unlock=offer.price_unlock,
             deposit=offer.deposit,
             ttl=offer.ttl,
-            offer_id=req.offer.id
         )
         await session.commit()
+
+        logger.info(
+            "order.created",
+            order_id=order.order_id,
+            user_id=order.user_id,
+            scooter_id=order.scooter_id,
+            time_start=order.time_start,
+            price_per_minute=order.price_per_min,
+            price_unlock=order.price_unlock,
+            deposit=order.deposit,
+            ttl=order.ttl,
+        )
 
         return order.order_id
 
