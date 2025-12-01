@@ -17,16 +17,16 @@ async def test_health():
 @pytest.mark.asyncio
 async def test_create_offer(monkeypatch):
     # Mock dependencies to isolate test
-    async def mock_get_scooter(scooter_id):
+    async def mock_get_scooter(self, scooter_id):
         return {"scooter_id": scooter_id, "zone_id": "center", "available": True, "charge": 100}
 
-    async def mock_get_zone(zone_id):
+    async def mock_get_zone(self, zone_id):
         return {"zone_id": zone_id, "price_multiplier": 15, "price_unlock": 50, "default_deposit": 1000, "offer_ttl_seconds": 300}
 
-    async def mock_get_user(user_id):
+    async def mock_get_user(self, user_id):
         return {"user_id": user_id, "has_subscribtion": False, "trusted": False}
 
-    async def mock_get_price_coeff_settings():
+    async def mock_get_price_coeff_settings(self):
         return {"surge": 1.0, "low_charge_discount": 1.0}
 
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
