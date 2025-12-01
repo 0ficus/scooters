@@ -17,7 +17,7 @@ async def test_health():
 @pytest.mark.asyncio
 async def test_create_offer(monkeypatch):
     # Mock dependencies to isolate test
-    async def mock_get_scooter(self, scooter_id):
+    async def mock_get_scooter(self, scooter_id, require_available = True):
         return {"scooter_id": scooter_id, "zone_id": "center", "available": True, "charge": 100}
 
     async def mock_get_zone(self, zone_id):
@@ -45,17 +45,17 @@ async def test_create_offer(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_create_offer_pricing_logic(monkeypatch):
-    async def mock_get_scooter(_):
+    async def mock_get_scooter(self, scooter_id, require_available = True):
         return {"zone_id": "center", "charge": 5}
 
-    async def mock_get_zone(_):
+    async def mock_get_zone(self, zone_id):
         return {"price_multiplier": 10, "price_unlock": 50,
                 "default_deposit": 200, "offer_ttl_seconds": 100}
 
-    async def mock_get_user(_):
+    async def mock_get_user(self, user_id):
         return {"has_subscribtion": False, "trusted": True}
 
-    async def mock_price_settings():
+    async def mock_price_settings(self):
         return {"surge": 2.0, "low_charge_discount": 0.5}
 
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
@@ -76,7 +76,7 @@ async def test_create_offer_pricing_logic(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_start_order_expired_offer(monkeypatch):
-    async def mock_get_scooter(_, require_available=True):
+    async def mock_get_scooter(self, scooter_id, require_available = True):
         return {"zone_id": "center", "available": True}
 
     # force expire inside repo
@@ -99,19 +99,19 @@ async def test_start_order_expired_offer(monkeypatch):
 @pytest.mark.asyncio
 async def test_order_lifecycle(monkeypatch):
     # Mocks for scooter client and payment client
-    async def mock_get_scooter(scooter_id, require_available=True):
+    async def mock_get_scooter(self, scooter_id, require_available = True):
         return {"scooter_id": scooter_id, "zone_id": "center", "available": True, "charge": 100}
 
-    async def mock_lock_scooter(scooter_id):
+    async def mock_lock_scooter(self, scooter_id):
         return None
 
-    async def mock_unlock_scooter(scooter_id):
+    async def mock_unlock_scooter(self, scooter_id):
         return None
 
-    async def mock_hold_money(user_id, order_id, amount):
+    async def mock_hold_money(self, user_id, order_id, amount):
         return None
 
-    async def mock_clear_money(user_id, order_id, amount):
+    async def mock_clear_money(self, user_id, order_id, amount):
         return None
 
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
