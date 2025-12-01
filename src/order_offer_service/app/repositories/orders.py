@@ -18,7 +18,7 @@ class OrderRepository:
         price_per_minute: int,
         price_unlock: int,
         deposit: int,
-        ttl_days: int,
+        ttl: int,
     ) -> Order:
         order = Order(
             user_id=user_id,
@@ -26,7 +26,7 @@ class OrderRepository:
             price_per_minute=price_per_minute,
             price_unlock=price_unlock,
             deposit=deposit,
-            ttl=ttl_days,
+            ttl=ttl,
             time_start=datetime.now(timezone.utc),
         )
         session.add(order)
