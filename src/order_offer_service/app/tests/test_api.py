@@ -4,7 +4,12 @@ from order_offer_service.app.main import app
 import order_offer_service.app.core.exceptions as exceptions
 from order_offer_service.app.schemas.offers import OfferCreateRequest
 from order_offer_service.app.schemas.orders import OrderStartRequest, OrderStopRequest
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from order_offer_service.app.config import get_settings
+from collections.abc import AsyncGenerator
+from order_offer_service.app.models.base import Base
 
+settings = get_settings()
 
 @pytest.mark.asyncio
 async def test_health():
@@ -33,6 +38,10 @@ async def test_create_offer(monkeypatch):
     monkeypatch.setattr("order_offer_service.app.services.integrations.ZoneClient.get_zone", mock_get_zone)
     monkeypatch.setattr("order_offer_service.app.services.integrations.UserClient.get_user", mock_get_user)
     monkeypatch.setattr("order_offer_service.app.services.integrations.ConfigClient.get_price_coeff_settings", mock_get_price_coeff_settings)
+
+    engine = create_async_engine(settings.postgres_dsn, pool_pre_ping=True, future=True)
+    monkeypatch.setattr("order_offer_service.app.core.db.engine", engine)
+    monkeypatch.setattr("order_offer_service.app.core.db.async_session_factory", async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession))
 
     payload = {"user_id": 1, "scooter_id": 101}
     async with AsyncClient(app=app, base_url="http://test") as ac:
@@ -63,6 +72,10 @@ async def test_create_offer_pricing_logic(monkeypatch):
     monkeypatch.setattr("order_offer_service.app.services.integrations.UserClient.get_user", mock_get_user)
     monkeypatch.setattr("order_offer_service.app.services.integrations.ConfigClient.get_price_coeff_settings", mock_price_settings)
 
+    engine = create_async_engine(settings.postgres_dsn, pool_pre_ping=True, future=True)
+    monkeypatch.setattr("order_offer_service.app.core.db.engine", engine)
+    monkeypatch.setattr("order_offer_service.app.core.db.async_session_factory", async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession))
+
     payload = {"user_id": 1, "scooter_id": 123}
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
@@ -85,6 +98,10 @@ async def test_start_order_expired_offer(monkeypatch):
 
     monkeypatch.setattr("order_offer_service.app.services.offers.OfferService.get_valid_offer", mock_get_valid_offer)
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
+
+    engine = create_async_engine(settings.postgres_dsn, pool_pre_ping=True, future=True)
+    monkeypatch.setattr("order_offer_service.app.core.db.engine", engine)
+    monkeypatch.setattr("order_offer_service.app.core.db.async_session_factory", async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession))
 
     payload = {"user_id": 1, "offer_id": 1}
 
@@ -117,6 +134,10 @@ async def test_order_lifecycle(monkeypatch):
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.unlock_scooter", mock_unlock_scooter)
     monkeypatch.setattr("order_offer_service.app.services.integrations.PaymentClient.hold_money", mock_hold_money)
     monkeypatch.setattr("order_offer_service.app.services.integrations.PaymentClient.clear_money", mock_clear_money)
+
+    engine = create_async_engine(settings.postgres_dsn, pool_pre_ping=True, future=True)
+    monkeypatch.setattr("order_offer_service.app.core.db.engine", engine)
+    monkeypatch.setattr("order_offer_service.app.core.db.async_session_factory", async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession))
 
     # Create offer first
     payload_offer = {"user_id": 1, "scooter_id": 101}
