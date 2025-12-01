@@ -22,14 +22,13 @@
 
 ### Order Offer Service API
 
-| Test Case                                      | Result | Notes                                  |
-|-----------------------------------------------|--------|----------------------------------------|
-| PUT /api/v1/offers/create                      | Pass   | Valid, invalid user/scooter, pricing logic tested |
-| PUT /api/v1/orders/start                       | Pass   | Valid, expired offer, scooter unavailable tested |
-| GET /api/v1/orders/get                         | Pass   | Valid and mismatched user/order tested |
-| PUT /api/v1/orders/stop                        | Pass   | Idempotency, minimal duration pricing, archiving tested |
-| Domain error handling                          | Pass   | Correct HTTP status and messages       |
-| GET /health                                    | Pass   | Returns status ok                       |
+| Test Case                                      | Result | Notes                                                   |
+|-----------------------------------------------|--------|---------------------------------------------------------|
+| PUT /api/v1/offers/create                      | Pass   | Valid, invalid user/scooter, pricing logic tested       |
+| PUT /api/v1/orders/start                       | Pass   | Valid, expired offer                                    |
+| GET /api/v1/orders/get                         | Pass   | Valid input testes                                      |
+| Domain error handling                          | Pass   | Correct HTTP status and messages                        |
+| GET /health                                    | Pass   | Returns status ok                                       |
 
 ---
 

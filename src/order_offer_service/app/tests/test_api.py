@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 from order_offer_service.app.main import app
+import order_offer_service.app.core.exceptions as exceptions
 from order_offer_service.app.schemas.offers import OfferCreateRequest
 from order_offer_service.app.schemas.orders import OrderStartRequest, OrderStopRequest
 
@@ -40,6 +41,59 @@ async def test_create_offer(monkeypatch):
     data = response.json()
     assert data["offer_id"] > 0
     assert data["ttl"] > 0
+
+
+@pytest.mark.asyncio
+async def test_create_offer_pricing_logic(monkeypatch):
+    async def mock_get_scooter(_):
+        return {"zone_id": "center", "charge": 5}
+
+    async def mock_get_zone(_):
+        return {"price_multiplier": 10, "price_unlock": 50,
+                "default_deposit": 200, "offer_ttl_seconds": 100}
+
+    async def mock_get_user(_):
+        return {"has_subscribtion": False, "trusted": True}
+
+    async def mock_price_settings():
+        return {"surge": 2.0, "low_charge_discount": 0.5}
+
+    monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
+    monkeypatch.setattr("order_offer_service.app.services.integrations.ZoneClient.get_zone", mock_get_zone)
+    monkeypatch.setattr("order_offer_service.app.services.integrations.UserClient.get_user", mock_get_user)
+    monkeypatch.setattr("order_offer_service.app.services.integrations.ConfigClient.get_price_coeff_settings", mock_price_settings)
+
+    payload = {"user_id": 1, "scooter_id": 123}
+
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        r = await ac.put("/api/v1/offers/create", json=payload)
+
+    assert r.status_code == 200
+    body = r.json()
+    # 10 * 2.0 surge = 20, then *0.5 low charge discount = 10
+    assert body["price_per_minute"] == 10
+
+
+@pytest.mark.asyncio
+async def test_start_order_expired_offer(monkeypatch):
+    async def mock_get_scooter(_, require_available=True):
+        return {"zone_id": "center", "available": True}
+
+    # force expire inside repo
+    async def mock_get_valid_offer(session, offer_id, user_id):
+        raise exceptions.OfferExpired()
+
+    monkeypatch.setattr("order_offer_service.app.services.offers.OfferService.get_valid_offer", "get_valid_offer", mock_get_valid_offer)
+    monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
+
+    payload = {"user_id": 1, "offer_id": 1}
+
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        r = await ac.put("/api/v1/orders/start", json=payload)
+
+    assert r.json()["message"] == "offer_expired"
+
+
 
 
 @pytest.mark.asyncio
