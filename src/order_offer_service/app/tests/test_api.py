@@ -83,7 +83,7 @@ async def test_start_order_expired_offer(monkeypatch):
     async def mock_get_valid_offer(session, offer_id, user_id):
         raise exceptions.OfferExpired()
 
-    monkeypatch.setattr("order_offer_service.app.services.offers.OfferService.get_valid_offer", "get_valid_offer", mock_get_valid_offer)
+    monkeypatch.setattr("order_offer_service.app.services.offers.OfferService.get_valid_offer",  mock_get_valid_offer)
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
 
     payload = {"user_id": 1, "offer_id": 1}
