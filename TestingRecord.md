@@ -46,5 +46,5 @@
 
 ## Summary
 
-All critical paths and edge cases have been tested successfully in local and containerized environments.
+All critical paths have been tested successfully in local and containerized environments.
 ---
