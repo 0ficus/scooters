@@ -35,13 +35,11 @@ class OrderService:
 
         existing = await self.order_repo.get_active_by_user(session, user_id)
         if existing:
-            return existing.order_id
+            return existing
 
         offer = await self.offer_service.get_valid_offer(session, offer_id, user_id)
 
         await self.scooter_client.lock_scooter(offer.scooter_id)
-
-        await self.payment_client.hold_money(user_id, order.order_id, offer.price_unlock)
 
         order = await self.order_repo.create(
             session,
@@ -52,6 +50,10 @@ class OrderService:
             deposit=offer.deposit,
             ttl=offer.ttl,
         )
+        await session.flush()
+
+        await self.payment_client.hold_money(user_id, order.order_id, offer.deposit)
+
         await session.commit()
 
         logger.info(
@@ -66,7 +68,7 @@ class OrderService:
             ttl=order.ttl,
         )
 
-        return order.order_id
+        return order
 
     async def get_order(self, session: AsyncSession, order_id: int, user_id: int):
         order = await self.order_repo.get(session, order_id)
@@ -76,7 +78,15 @@ class OrderService:
 
     async def describe_order(self, session: AsyncSession, order_id: int, user_id: int):
         order = await self.get_order(session, order_id, user_id)
-        return order
+        
+        time_end = order.time_finish if order.time_finish else datetime.now(timezone.utc)
+        order_duration = int((time_end - order.time_start).total_seconds())
+        
+        total_price = 0
+        if order_duration >= settings.order_minimal_duration_seconds:
+            total_price = (order_duration * order.price_per_minute) // 60 + order.price_unlock
+        
+        return order, total_price
 
     async def stop_order(self, session: AsyncSession, req: OrderStopRequest):
         order_id = req.order_id

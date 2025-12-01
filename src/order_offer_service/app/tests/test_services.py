@@ -172,6 +172,12 @@ class MockOrderRepo:
     async def get(self, session, order_id):
         return self.storage.get(order_id)
 
+    async def get_active_by_user(self, session, user_id):
+        for order in self.storage.values():
+            if order.user_id == user_id and order.time_finish is None:
+                return order
+        return None
+
     async def finish(self, session, order_id):
         order = self.storage.get(order_id)
         if order:
@@ -212,6 +218,9 @@ class MockScooterClient:
 class MockSession:
     async def commit(self):
         return None
+    
+    async def flush(self):
+        return None
 
 
 
@@ -223,7 +232,7 @@ async def test_start_order(monkeypatch):
     session = MockSession()
     
     class MockOfferService:
-        async def get_offer(self, offer_id):
+        async def get_valid_offer(self, session, offer_id, user_id):
             return type('Offer', (), {
                 'scooter_id': 5,
                 'price_per_minute': 10,
@@ -233,18 +242,18 @@ async def test_start_order(monkeypatch):
                 'time_created': datetime.now(timezone.utc)
             })()
 
-    offer_service = MockOfferService()
+    mock_offer_service = MockOfferService()
 
     monkeypatch.setattr(order_service, "order_repo", order_repo)
-    monkeypatch.setattr(order_service, "offer_service", None)
+    monkeypatch.setattr(order_service, "offer_service", mock_offer_service)
     monkeypatch.setattr(order_service, "payment_client", payment)
     monkeypatch.setattr(order_service, "scooter_client", scooter)
 
     req = OrderStartRequest(user_id=1, offer_id=123)
-    order_id = await svc.start_order(session, req)
+    order = await order_service.start_order(session, req)
 
-    assert order_id == 1
-    assert order_repo.storage[order_id].user_id == 1
+    assert order.order_id == 1
+    assert order_repo.storage[order.order_id].user_id == 1
     assert payment.holds == [(1, order.order_id, 5)]
     assert scooter.locked == [5]
 
