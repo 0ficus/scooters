@@ -80,10 +80,10 @@ async def test_start_order_expired_offer(monkeypatch):
         return {"zone_id": "center", "available": True}
 
     # force expire inside repo
-    async def mock_get_valid_offer(session, offer_id, user_id):
+    async def mock_get_valid_offer(self, session, offer_id, user_id):
         raise exceptions.OfferExpired()
 
-    monkeypatch.setattr("order_offer_service.app.services.offers.OfferService.get_valid_offer", "get_valid_offer", mock_get_valid_offer)
+    monkeypatch.setattr("order_offer_service.app.services.offers.OfferService.get_valid_offer", mock_get_valid_offer)
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
 
     payload = {"user_id": 1, "offer_id": 1}
@@ -91,9 +91,7 @@ async def test_start_order_expired_offer(monkeypatch):
     async with AsyncClient(app=app, base_url="http://test") as ac:
         r = await ac.put("/api/v1/orders/start", json=payload)
 
-    assert r.json()["message"] == "offer_expired"
-
-
+    assert r.json().get("detail") == "offer_expired", r.json()
 
 
 @pytest.mark.asyncio
