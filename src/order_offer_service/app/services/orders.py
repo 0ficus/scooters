@@ -48,7 +48,7 @@ class OrderService:
             price_per_minute=offer.price_per_minute,
             price_unlock=offer.price_unlock,
             deposit=offer.deposit,
-            ttl_days=offer.ttl,
+            ttl=offer.ttl,
         )
         await session.flush()
 
