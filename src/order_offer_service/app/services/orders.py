@@ -30,13 +30,42 @@ class OrderService:
         self.scooter_client = scooter_client
 
     async def start_order(self, session: AsyncSession, req: OrderStartRequest):
-        pass
+        user_id = req.user_id
+        offer_id = req.offer_id
+
+        existing = await self.order_repo.get_active_by_user(session, user_id)
+        if existing:
+            return existing.order_id
+
+        offer = await self.offer_service.get_valid_offer(session, offer_id, user_id)
+
+        await self.scooter_client.lock_scooter(offer.scooter_id)
+
+        await self.payment_client.hold_money(user_id, order.order_id, offer.price_unlock)
+
+        order = await self.order_repo.create(
+            session,
+            user_id=user_id,
+            scooter_id=offer.scooter_id,
+            price_per_minute=offer.price_per_minute,
+            price_unlock=offer.price_unlock,
+            deposit=offer.deposit,
+            ttl=offer.ttl,
+            offer_id=req.offer.id
+        )
+        await session.commit()
+
+        return order.order_id
 
     async def get_order(self, session: AsyncSession, order_id: int, user_id: int):
-        pass
+        order = await self.order_repo.get(session, order_id)
+        if order is None or order.user_id != user_id:
+            raise exceptions.OrderNotFound()
+        return order
 
     async def describe_order(self, session: AsyncSession, order_id: int, user_id: int):
-        pass
+        order = await self.get_order(session, order_id, user_id)
+        return order
 
     async def stop_order(self, session: AsyncSession, req: OrderStopRequest):
         order_id = req.order_id
