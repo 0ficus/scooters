@@ -14,7 +14,5 @@ COPY app ./order_offer_service/app
 COPY __init__.py ./order_offer_service/__init__.py
 
 EXPOSE 8080
-
-ENTRYPOINT ["sh", "-c"]
 CMD ["uvicorn", "order_offer_service.app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 

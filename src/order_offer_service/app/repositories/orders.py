@@ -38,6 +38,11 @@ class OrderRepository:
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_active_by_user(self, session: AsyncSession, user_id: int) -> Order | None:
+        stmt = select(Order).where(Order.user_id == user_id, Order.time_finish.is_(None))
+        result = await session.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def finish(self, session: AsyncSession, order_id: int) -> None:
         stmt = update(Order).where(Order.order_id == order_id).values({"time_finish": datetime.now(timezone.utc)})
         await session.execute(stmt)
