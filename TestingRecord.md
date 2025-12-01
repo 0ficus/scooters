@@ -22,13 +22,14 @@
 
 ### Order Offer Service API
 
-| Test Case                                      | Result | Notes                                                   |
-|-----------------------------------------------|--------|---------------------------------------------------------|
-| PUT /api/v1/offers/create                      | Pass   | Valid, invalid user/scooter, pricing logic tested       |
-| PUT /api/v1/orders/start                       | Pass   | Valid, expired offer                                    |
-| GET /api/v1/orders/get                         | Pass   | Valid input testes                                      |
-| Domain error handling                          | Pass   | Correct HTTP status and messages                        |
-| GET /health                                    | Pass   | Returns status ok                                       |
+| Test Case                 | Result | Notes            |
+|---------------------------|--------|------------------|
+| PUT /api/v1/offers/create | Pass   | Valid, pricing logic tested |
+| PUT /api/v1/orders/start  | Pass   | Valid, expired offer |
+| GET /api/v1/orders/get    | Pass   | Valid input case |
+| Happy path                | Pass   |                  |
+| Domain error handling     | Pass   | Correct HTTP status and messages |
+| GET /health               | Pass   | Returns status ok |
 
 ---
 
@@ -43,18 +44,7 @@
 
 ---
 
-### Repository Layer
-
-| Test Case                                      | Result | Notes                                  |
-|-----------------------------------------------|--------|----------------------------------------|
-| OfferRepository.delete_expired                  | Pass   | Only expired offers deleted            |
-| OrderRepository.delete_older_than                | Pass   | Orders older than threshold deleted    |
-| OrderRepository.finish                           | Pass   | Finish time set correctly              |
-
----
-
 ## Summary
 
-All critical paths and edge cases have been tested successfully in local and containerized environments. The CI pipeline includes automated tests on each push, ensuring code quality and reliability before deployment.
-
+All critical paths and edge cases have been tested successfully in local and containerized environments.
 ---
