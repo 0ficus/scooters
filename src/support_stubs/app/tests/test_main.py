@@ -1,4 +1,3 @@
-# File: src/support_stubs/tests/test_main.py
 import pytest
 from httpx import AsyncClient
 from support_stubs.app.main import app
