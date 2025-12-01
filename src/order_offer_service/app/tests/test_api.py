@@ -45,17 +45,17 @@ async def test_create_offer(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_create_offer_pricing_logic(monkeypatch):
-    async def mock_get_scooter(_):
+    async def mock_get_scooter(self, scooter_id):
         return {"zone_id": "center", "charge": 5}
 
-    async def mock_get_zone(_):
+    async def mock_get_zone(self, zone_id):
         return {"price_multiplier": 10, "price_unlock": 50,
                 "default_deposit": 200, "offer_ttl_seconds": 100}
 
-    async def mock_get_user(_):
+    async def mock_get_user(self, user_id):
         return {"has_subscribtion": False, "trusted": True}
 
-    async def mock_price_settings():
+    async def mock_price_settings(self):
         return {"surge": 2.0, "low_charge_discount": 0.5}
 
     monkeypatch.setattr("order_offer_service.app.services.integrations.ScooterClient.get_scooter", mock_get_scooter)
