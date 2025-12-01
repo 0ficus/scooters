@@ -214,13 +214,40 @@ class MockSession:
         return None
 
 
+
 @pytest.mark.asyncio
 async def test_start_order(monkeypatch):
     order_repo = MockOrderRepo()
     payment = MockPaymentClient()
     scooter = MockScooterClient()
+    session = MockSession()
+    
+    class MockOfferService:
+        async def get_offer(self, offer_id):
+            return type('Offer', (), {
+                'scooter_id': 5,
+                'price_per_minute': 10,
+                'price_unlock': 2,
+                'deposit': 5,
+                'ttl': 3600,
+                'time_created': datetime.now(timezone.utc)
+            })()
 
-    #TODO when start_order is made
+    offer_service = MockOfferService()
+
+    monkeypatch.setattr(order_service, "order_repo", order_repo)
+    monkeypatch.setattr(order_service, "offer_service", None)
+    monkeypatch.setattr(order_service, "payment_client", payment)
+    monkeypatch.setattr(order_service, "scooter_client", scooter)
+
+    req = OrderStartRequest(user_id=1, offer_id=123)
+    order_id = await svc.start_order(session, req)
+
+    assert order_id == 1
+    assert order_repo.storage[order_id].user_id == 1
+    assert payment.holds == [(1, order.order_id, 5)]
+    assert scooter.locked == [5]
+
 
 @pytest.mark.asyncio
 async def test_stop_order(monkeypatch):
