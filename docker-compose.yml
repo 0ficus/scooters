@@ -68,6 +68,64 @@ services:
     volumes:
       - ./src:/app
 
+  # DWH Infrastructure
+  dwh-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: dwh_user
+      POSTGRES_PASSWORD: dwh_pass
+      POSTGRES_DB: dwh_db
+    volumes:
+      - dwh-postgres-data:/var/lib/postgresql/data
+      - ./src/dwh/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+
+  airflow:
+    image: apache/airflow:2.8.1
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://dwh_user:dwh_pass@dwh-postgres:5432/dwh_db
+      AIRFLOW__CORE__FERNET_KEY: 'UKMzEm3yIuFYEq1y3-2FxPNWSVwRASpahmQ9kQfEr8E='
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+      AIRFLOW_CONN_OLTP_POSTGRES: postgresql://orders_user:orders_pass@postgres:5432/orders_db
+      AIRFLOW_CONN_DWH_POSTGRES: postgresql://dwh_user:dwh_pass@dwh-postgres:5432/dwh_db
+    volumes:
+      - ./src/dwh/dags:/opt/airflow/dags
+      - airflow-logs:/opt/airflow/logs
+      - airflow-plugins:/opt/airflow/plugins
+    ports:
+      - "8082:8080"
+    depends_on:
+      - dwh-postgres
+      - postgres
+    command: >
+      bash -c "airflow db init &&
+               airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+               airflow webserver & airflow scheduler"
+
+  metabase:
+    image: metabase/metabase:v0.48.3
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: dwh_db
+      MB_DB_PORT: 5432
+      MB_DB_USER: dwh_user
+      MB_DB_PASS: dwh_pass
+      MB_DB_HOST: dwh-postgres
+    ports:
+      - "3000:3000"
+    depends_on:
+      - dwh-postgres
+    volumes:
+      - metabase-data:/metabase-data
+
 volumes:
   postgres-data:
   minio-data:
+  dwh-postgres-data:
+  airflow-logs:
+  airflow-plugins:
+  metabase-data:
