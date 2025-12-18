@@ -24,10 +24,10 @@ class Order(BaseModel):
     order_id: int
     user_id: int
     scooter_id: int
-    total_price: int
+    total_amount: int
     time_start: datetime
     time_finish: datetime | None = None
-    
+
     model_config = {
         "populate_by_name": True
     }
@@ -57,7 +57,7 @@ for order_id in range(1, TOTAL_ORDERS + 1):
         order_id=order_id,
         user_id=random.randint(1, 1000),
         scooter_id=random.randint(1, 200),
-        total_price=random.randint(100, 10000),
+        total_amount=random.randint(100, 10000),
         time_start=start_time,
         time_finish=random_finish(start_time),
     )

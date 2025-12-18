@@ -69,7 +69,7 @@ def get_processed_files(s3_client, execution_date):
     """Get list of already processed files for the given date"""
     date_str = execution_date.strftime('%Y-%m-%d')
     processed_key = f"{PROCESSED_FILES_PREFIX}{date_str}.json"
-    
+
     try:
         response = s3_client.get_object(Bucket=S3_BUCKET, Key=processed_key)
         content = response['Body'].read().decode('utf-8')
@@ -85,7 +85,7 @@ def save_processed_files(s3_client, execution_date, processed_files):
     """Save list of processed files for the given date"""
     date_str = execution_date.strftime('%Y-%m-%d')
     processed_key = f"{PROCESSED_FILES_PREFIX}{date_str}.json"
-    
+
     try:
         s3_client.put_object(
             Bucket=S3_BUCKET,
@@ -105,26 +105,26 @@ def extract_from_s3(**context):
     """
     execution_date = context['execution_date']
     s3_client = get_s3_client()
-    
+
     processed_files = get_processed_files(s3_client, execution_date)
     logger.info(f"Already processed {len(processed_files)} files")
-    
+
     orders = []
     new_processed_files = set()
-    
+
     try:
         paginator = s3_client.get_paginator('list_objects_v2')
-        
+
         for page in paginator.paginate(Bucket=S3_BUCKET, Prefix='orders/'):
             for obj in page.get('Contents', []):
                 key = obj['Key']
-                
+
                 if key in processed_files:
                     continue
-                
+
                 if not key.endswith('.json'):
                     continue
-                
+
                 try:
                     response = s3_client.get_object(Bucket=S3_BUCKET, Key=key)
                     content = response['Body'].read().decode('utf-8')
@@ -135,16 +135,16 @@ def extract_from_s3(**context):
                 except Exception as e:
                     logger.error(f"Error processing file {key}: {e}")
                     continue
-    
+
     except Exception as e:
         logger.error(f"Error listing S3 objects: {e}")
         raise
-    
+
     all_processed = processed_files.union(new_processed_files)
     save_processed_files(s3_client, execution_date, all_processed)
-    
+
     logger.info(f"Extracted {len(orders)} new orders from S3")
-    
+
     context['ti'].xcom_push(key='orders', value=orders)
     return len(orders)
 
@@ -154,34 +154,31 @@ def load_to_clickhouse(**context):
     Load extracted orders into ClickHouse
     """
     orders = context['ti'].xcom_pull(key='orders', task_ids='extract_from_s3')
-    
+
     if not orders:
         logger.info("No new orders to load")
         return 0
-    
+
     client = get_clickhouse_client()
-    
+
     rows = []
     for order in orders:
         try:
             started_at = datetime.fromisoformat(order.get('time_start', order.get('started_at')).replace('Z', '+00:00'))
             finished_at_str = order.get('time_finish', order.get('finished_at'))
-            
+
             if finished_at_str:
                 finished_at = datetime.fromisoformat(finished_at_str.replace('Z', '+00:00'))
             else:
                 continue
-            
-            duration_minutes = (finished_at - started_at).total_seconds() / 60
-            price_per_minute = order.get('price_per_minute', 0)
-            price_unlock = order.get('price_unlock', 0)
-            total_price = int(duration_minutes * price_per_minute) + price_unlock
-            
+
+            total_amount = order.get('total_amount', 0)
+
             row = (
                 int(order.get('order_id')),
                 int(order.get('user_id')),
                 int(order.get('scooter_id')),
-                total_price,
+                total_amount,
                 started_at.replace(tzinfo=None),
                 finished_at.replace(tzinfo=None),
                 int(order.get('ttl', 0)),
@@ -190,15 +187,15 @@ def load_to_clickhouse(**context):
         except Exception as e:
             logger.error(f"Error preparing order {order.get('order_id')}: {e}")
             continue
-    
+
     if not rows:
         logger.info("No valid orders to insert")
         return 0
-    
+
     try:
         client.execute(
             '''
-            INSERT INTO orders (order_id, user_id, scooter_id, total_price, started_at, finished_at, ttl)
+            INSERT INTO orders (order_id, user_id, scooter_id, total_amount, started_at, finished_at, ttl)
             VALUES
             ''',
             rows
@@ -207,7 +204,7 @@ def load_to_clickhouse(**context):
     except Exception as e:
         logger.error(f"Error inserting into ClickHouse: {e}")
         raise
-    
+
     return len(rows)
 
 
@@ -218,8 +215,8 @@ def refresh_dashboards(**context):
     Metabase cache refresh for immediate dashboard updates
     """
     import requests
-    
-    
+
+
     try:
         response = requests.get(f"{METABASE_URL}/api/health", timeout=10)
         if response.status_code == 200:
@@ -228,7 +225,7 @@ def refresh_dashboards(**context):
             logger.warning(f"Metabase health check returned: {response.status_code}")
     except requests.exceptions.RequestException as e:
         logger.warning(f"Could not reach Metabase: {e}")
-    
+
     return True
 
 
