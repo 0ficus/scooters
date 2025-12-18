@@ -11,13 +11,14 @@
 
 ### Data Sources
 - **S3 Storage**: Долгосрочное хранилище заказов
-  - Bucket: `orderse`
+  - Bucket: `orders`
+  - File Path: `/orders/zone={zone-id}/year={year}/month={month}/day={day}/{order_id}.json`
   - Format: JSON files
 
 ### Data Processing
 - **Apache Airflow 2.8.1**: ETL
   - DAG: `scooter_rental_etl`
-  - Schedule: Hourly
+  - Schedule: Раз в пол часа
   - Execution Mode: Standalone (LocalExecutor)
 
 ### Data Warehouse
@@ -39,7 +40,7 @@
 
 2. **load_to_clickhouse**: Пишем данные из json в ClickHouse
 
-3. **draw_dashboards**: Дергаем Metabase, чтобы он сходил в матвью кликхауса за данными из aggregated_matrics и нарисовала графики
+3. **draw_dashboards**: Дергаем Metabase, чтобы он сходил в матвью кликхауса за данными из aggregated_matrics и нарисовал графики
 
 **Dependency Graph**:
 ```
