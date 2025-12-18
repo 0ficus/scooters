@@ -1,0 +1,127 @@
+{
+  "description": "Metabase Dashboard Configuration for Scooter Rental DWH",
+  "database": {
+    "name": "ClickHouse DWH",
+    "engine": "clickhouse",
+    "details": {
+      "host": "clickhouse",
+      "port": 8123,
+      "dbname": "default",
+      "user": "default",
+      "password": "",
+      "ssl": false
+    }
+  },
+  "dashboards": [
+    {
+      "name": "Scooter Rental Analytics",
+      "description": "Main dashboard for scooter rental business metrics",
+      "cards": [
+        {
+          "name": "Total Revenue",
+          "description": "Sum of all order prices",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT sum(total_revenue) as total_revenue FROM aggregated_metrics WHERE metric_date >= today() - 30"
+            }
+          },
+          "visualization": "scalar"
+        },
+        {
+          "name": "Orders Count",
+          "description": "Total number of completed orders",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT sum(orders_count) as orders_count FROM aggregated_metrics WHERE metric_date >= today() - 30"
+            }
+          },
+          "visualization": "scalar"
+        },
+        {
+          "name": "Users Count",
+          "description": "Count of unique users who made orders",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT sum(users_count) as users_count FROM aggregated_metrics WHERE metric_date >= today() - 30"
+            }
+          },
+          "visualization": "scalar"
+        },
+        {
+          "name": "Average Ride Duration",
+          "description": "Average duration of rides in minutes",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT avg(avg_ride_duration_minutes) as avg_duration FROM aggregated_metrics WHERE metric_date >= today() - 30"
+            }
+          },
+          "visualization": "scalar"
+        },
+        {
+          "name": "Average Order Price",
+          "description": "Average price per order",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT avg(avg_order_price) as avg_price FROM aggregated_metrics WHERE metric_date >= today() - 30"
+            }
+          },
+          "visualization": "scalar"
+        },
+        {
+          "name": "Revenue Over Time",
+          "description": "Daily revenue trend",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT metric_date, sum(total_revenue) as revenue FROM aggregated_metrics WHERE metric_date >= today() - 30 GROUP BY metric_date ORDER BY metric_date"
+            }
+          },
+          "visualization": "line"
+        },
+        {
+          "name": "Orders Over Time",
+          "description": "Daily orders count trend",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT metric_date, sum(orders_count) as orders FROM aggregated_metrics WHERE metric_date >= today() - 30 GROUP BY metric_date ORDER BY metric_date"
+            }
+          },
+          "visualization": "bar"
+        },
+        {
+          "name": "Hourly Activity",
+          "description": "Orders distribution by hour",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT toHour(metric_tenmin) as hour, sum(orders_count) as orders FROM aggregated_metrics WHERE metric_date >= today() - 7 GROUP BY hour ORDER BY hour"
+            }
+          },
+          "visualization": "bar"
+        }
+      ]
+    }
+  ],
+  "setup_instructions": [
+    "1. Access Metabase at http://localhost:3001",
+    "2. Complete initial setup wizard (create admin account)",
+    "3. Add ClickHouse database connection:",
+    "   - Go to Admin Settings -> Databases -> Add Database",
+    "   - Database type: ClickHouse (available via plugin)",
+    "   - Display name: ClickHouse DWH",
+    "   - Host: clickhouse",
+    "   - Port: 8123",
+    "   - Database name: default",
+    "   - Username: default",
+    "   - Password: (leave empty)",
+    "4. Create a new dashboard named 'Scooter Rental Analytics'",
+    "5. Add cards using the queries defined above",
+    "6. Configure auto-refresh interval as needed"
+  ]
+}
