@@ -113,7 +113,7 @@ def extract_from_s3(**context):
     new_processed_files = set()
 
     data_prefix = f"orders/year={execution_date.year}/month={execution_date.month:02d}/"
-    if processed_files or get_processed_files(s3_client, execution_date - timedelta(days=1)):
+    if get_processed_files(s3_client, execution_date - timedelta(days=1)):
         data_prefix += f"day={execution_date.day:02d}/"
     logger.info(f"Scanning S3 prefix: {data_prefix}")
 
