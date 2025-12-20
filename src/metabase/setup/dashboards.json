@@ -81,7 +81,9 @@
               "query": "SELECT metric_date, sum(total_revenue) as revenue FROM aggregated_metrics WHERE metric_date >= today() - 30 GROUP BY metric_date ORDER BY metric_date"
             }
           },
-          "visualization": "line"
+          "visualization": "line",
+          "x_col": "metric_date",
+          "y_col": "revenue"
         },
         {
           "name": "Orders Over Time",
@@ -92,7 +94,9 @@
               "query": "SELECT metric_date, sum(orders_count) as orders FROM aggregated_metrics WHERE metric_date >= today() - 30 GROUP BY metric_date ORDER BY metric_date"
             }
           },
-          "visualization": "bar"
+          "visualization": "bar",
+          "x_col": "metric_date",
+          "y_col": "orders"
         },
         {
           "name": "Hourly Activity",
@@ -103,7 +107,9 @@
               "query": "SELECT toHour(metric_tenmin) as hour, sum(orders_count) as orders FROM aggregated_metrics WHERE metric_date >= today() - 7 GROUP BY hour ORDER BY hour"
             }
           },
-          "visualization": "bar"
+          "visualization": "bar",
+          "x_col": "hour",
+          "y_col": "orders"
         }
       ]
     }

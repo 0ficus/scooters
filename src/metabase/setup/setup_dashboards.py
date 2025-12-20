@@ -153,7 +153,7 @@ class MetabaseSetup:
             print(f"✗ Failed to create dashboard: {response.status_code} - {response.text}")
             return None
 
-    def create_native_question(self, name: str, query: str, visualization: str = "scalar") -> int:
+    def create_native_question(self, name: str, query: str, visualization: str = "scalar", x_col: str = None, y_col: str = None) -> int:
         """Create a native SQL question (card)"""
         print(f"  Creating question: {name}...")
         
@@ -169,6 +169,15 @@ class MetabaseSetup:
             "pie": "pie"
         }
 
+        viz_settings = {}
+        if visualization in ["bar", "line"] and x_col and y_col:
+            viz_settings = {
+                "graph.dimensions": [x_col],
+                "graph.metrics": [y_col],
+                "graph.x_axis.title_text": x_col,
+                "graph.y_axis.title_text": y_col
+            }
+
         card_config = {
             "name": name,
             "dataset_query": {
@@ -179,7 +188,7 @@ class MetabaseSetup:
                 "database": self.database_id
             },
             "display": viz_map.get(visualization, "table"),
-            "visualization_settings": {}
+            "visualization_settings": viz_settings
         }
 
         response = self.session.post(
@@ -261,7 +270,9 @@ class MetabaseSetup:
                 card_id = self.create_native_question(
                     card_config.get("name"),
                     card_config.get("query", {}).get("native", {}).get("query", ""),
-                    card_config.get("visualization", "table")
+                    card_config.get("visualization", "table"),
+                    card_config.get("x_col"),
+                    card_config.get("y_col")
                 )
 
                 if card_id:
