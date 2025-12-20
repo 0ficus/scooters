@@ -110,6 +110,45 @@
           "visualization": "bar",
           "x_col": "hour",
           "y_col": "orders"
+        },
+        {
+          "name": "Users Over Time",
+          "description": "Daily users count trend",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT metric_date, sum(users_count) as users FROM aggregated_metrics WHERE metric_date >= today() - 30 GROUP BY metric_date ORDER BY metric_date"
+            }
+          },
+          "visualization": "bar",
+          "x_col": "metric_date",
+          "y_col": "users"
+        },
+        {
+          "name": "Average Ride Duration",
+          "description": "Daily average duration of rides in minutes",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT metric_date, avg(avg_ride_duration_minutes) as avg_duration FROM aggregated_metrics WHERE metric_date >= today() - 30 GROUP BY metric_date ORDER BY metric_date"
+            }
+          },
+          "visualization": "bar",
+          "x_col": "metric_date",
+          "y_col": "avg_duration"
+        },
+        {
+          "name": "Average Order Price",
+          "description": "Daily average price per order",
+          "query": {
+            "type": "native",
+            "native": {
+              "query": "SELECT metric_date, avg(avg_order_price) as avg_price FROM aggregated_metrics WHERE metric_date >= today() - 30 GROUP BY metric_date ORDER BY metric_date"
+            }
+          },
+          "visualization": "bar",
+          "x_col": "metric_date",
+          "y_col": "avg_price"
         }
       ]
     }
