@@ -202,7 +202,7 @@ def upload_to_s3(orders):
     uploaded = 0
     for order in orders:
         dt = order.time_start
-        path = f"orders/zone_id={order.zone_id}/year={dt.year}/month={dt.month:02}/day={dt.day:02}/{order.order_id}.json"
+        path = f"orders/year={dt.year}/month={dt.month:02}/day={dt.day:02}/{order.order_id}.json"
         
         data = order.model_dump(mode='json')
         

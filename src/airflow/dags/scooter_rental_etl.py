@@ -101,7 +101,7 @@ def save_processed_files(s3_client, execution_date, processed_files):
 def extract_from_s3(**context):
     """
     Extract order JSON files from S3 bucket
-    Only processes new files that haven't been processed yet
+    Only processes new files for the current day that haven't been processed yet
     """
     execution_date = context['execution_date']
     s3_client = get_s3_client()
@@ -112,10 +112,15 @@ def extract_from_s3(**context):
     orders = []
     new_processed_files = set()
 
+    data_prefix = f"orders/year={execution_date.year}/month={execution_date.month:02d}/"
+    if processed_files or get_processed_files(s3_client, execution_date - timedelta(days=1)):
+        data_prefix += f"day={execution_date.day:02d}/"
+    logger.info(f"Scanning S3 prefix: {data_prefix}")
+
     try:
         paginator = s3_client.get_paginator('list_objects_v2')
 
-        for page in paginator.paginate(Bucket=S3_BUCKET, Prefix='orders/'):
+        for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=data_prefix):
             for obj in page.get('Contents', []):
                 key = obj['Key']
 
