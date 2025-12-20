@@ -38,7 +38,7 @@ SELECT
     sum(total_amount) as total_revenue,
     avg(total_amount) as avg_order_price,
     count(*) as orders_count,
-    count(DISTINCT user_id) as users_count,
+    count(user_id) as users_count,
     avg(toUnixTimestamp(finished_at) - toUnixTimestamp(started_at)) / 60 as avg_ride_duration_minutes,
     now() as calculated_at
 FROM orders

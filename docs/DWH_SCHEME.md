@@ -74,7 +74,7 @@ SELECT
     sum(total_price) as total_revenue,
     avg(total_price) as avg_order_price,
     count(*) as orders_count,
-    count(DISTINCT user_id) as users_count,
+    count(user_id) as users_count,
     avg(toUnixTimestamp(finished_at) - toUnixTimestamp(started_at)) / 60 as avg_ride_duration_minutes,
     now() as calculated_at
 FROM orders
@@ -87,8 +87,8 @@ GROUP BY metric_date, metric_tenmin;
 | # | Metric Name | Source | Calculation |
 |---|-------------|--------|-------------|
 | 1 | **Total Revenue** | `total_revenue` | SUM(total_price) |
-| 2 | **Orders Count** | `orders_count` | COUNT(DISTINCT order_id) |
-| 3 | **Users Count** | `users_count` | COUNT(DISTINCT user_id) |
+| 2 | **Orders Count** | `orders_count` | COUNT(order_id) |
+| 3 | **Users Count** | `users_count` | COUNT(user_id) |
 | 4 | **Avg Ride Duration** | `avg_ride_duration_minutes` | AVG(finished_at - stared_at) in minutes |
 | 5 | **Avg Order Price** | `avg_order_price` | AVG(total_price) |
 
